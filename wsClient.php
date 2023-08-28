@@ -1,51 +1,21 @@
 <?php
 // namespace Beshoy\TradovateWsCleint;
 require 'vendor/autoload.php';
+require_once 'helpers.php';
 require_once 'loadEnv.php';
+require_once 'accessToken.php';
 use \WebSocket\Client;
 
 // Get variables from .env file
-$DEMO_BASEURL = getenv('DEMO_BASEURL');
-$VENDOR_NAME = getenv('VENDOR_NAME');
-$PASSWORD = getenv('PASSWORD');
-$APP_ID = getenv('APP_ID');
-$APP_VERSION = getenv('APP_VERSION');
-$SEC = getenv('SEC');
-$CID = getenv('CID');
-$DEVICE_ID = getenv('DEVICE_ID');
-$LIVE_BASEURL = getenv('LIVE_BASEURL');
 
-// Prepare credentials
-$credentials = array(
-    'name' => $VENDOR_NAME,
-    'password' => $PASSWORD,
-    'appId' => $APP_ID,
-    'appVersion' => $APP_VERSION,
-    'cid' => $CID,
-    'sec' => $SEC
-);
-
-// Prepare HTTP request
-$options = array(
-    'http' => array(
-        'header'  => "Content-type: application/json\r\n",
-        'method'  => 'POST',
-        'content' => json_encode($credentials),
-    ),
-);
-$context  = stream_context_create($options);
-$result = file_get_contents($DEMO_BASEURL . '/auth/accesstokenrequest', false, $context);
-if ($result === FALSE) { /* Handle error */ }
-
-// Parse response
-$response = json_decode($result);
-$accessToken = $response->accessToken;
-$mdAccessToken = $response->mdAccessToken;
-$userId = $response->userId;
 
 // Use access token
-$token = $accessToken;
 
+$token =getAccessToken();
+if ($token === false) {
+  logger( "Failed to get access token");
+  die;
+}
 $client = new Client("wss://demo-d.tradovateapi.com/v1/websocket");
 // $client->text('Hello PieSocket!');
  
@@ -60,24 +30,33 @@ $client->send($request);
 
 
 // Wait for authorize response
+$client->send("user/syncrequest");
 while($client->isConnected()) {
-  $response = $client->receive();
-  echo 'connected ' . $response . "\n";
-  if (file_put_contents('response.txt', $response) === false) {
-    echo "Failed to write to file";
-  }
+  echo "connected\n";
   // listen for user/syncrequest
-  $client->send("user/syncrequest");
+  $response = $client->receive();
+  // $response = ($response;
+  // logger( 'connected ' . $response . "\n");
+  // if (file_put_contents('response.txt', $response, FILE_APPEND) === false) {
+  //   logger( "Failed to write to file");
+  // }
   // keep alive @see https://api.tradovate.com/#section/Server-Frames
   if ($response !== null && $response == 'h') {
     $client->send(json_encode([]));
   }
 
   if ($response !== null && strpos($response,'"s":200') !== false) {
-    $response = $client->receive(); 
-    $unserializedResponse = json_decode($response);
-    file_put_contents('response.txt', $unserializedResponse);
-    break;
+    // $response = $client->receive(); 
+  $response = substr($response, 1);
+    
+  $unserializedResponse = json_decode($response);
+  echo 'type '.gettype($unserializedResponse);
+    logger( '======= response ====== '. "\n");
+    logger( $unserializedResponse );
+    logger( '======= end of response ====== '. "\n");
+    
+    file_put_contents('response.txt', print_r($response,true),FILE_APPEND);
+    // break;
   }
 }
 
