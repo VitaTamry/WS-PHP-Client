@@ -1,0 +1,17 @@
+{
+    "name": "beshoy/tradovate-ws-cleint",
+    "type": "project",
+    "require": {
+        "textalk/websocket": "^1.6"
+    },
+    "autoload": {
+        "psr-4": {
+            "Beshoy\\TradovateWsCleint\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "y"
+        }
+    ]
+}
