@@ -3,5 +3,3 @@ log.txt
 .env
 response.txt
 vendor
-vendor/autoload.php
-.env
