@@ -2,4 +2,6 @@
 log.txt
 .env
 response.txt
-vendor/
+vendor
+vendor/autoload.php
+.env
