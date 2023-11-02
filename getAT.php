@@ -1,7 +1,7 @@
 <?php
 // API Credentials
-$username = 'CapitalPartnersAcademy';
-$password = 'QrQQ2SDF$$';
+$username = 'xxxx';
+$password = 'xxxx';
 
 // Create curl request to get access token
 $ch = curl_init();
